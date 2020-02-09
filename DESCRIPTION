@@ -1,0 +1,21 @@
+Package: lifecalendar
+Title: Create Life Calendars
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Jonathan",
+           family = "Bratt",
+           role = c("aut", "cre"),
+           email = "jonathandanielbratt@gmail.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This package provides an easy way to make customized life 
+  calendars. Inspiration from: https://waitbutwhy.com/2014/05/life-weeks.html
+License: CCO
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Imports: 
+    lubridate (>= 1.7.4),
+    dplyr (>= 0.8.3),
+    ggplot2 (>= 3.2.1),
+    ggforce (>= 0.3.1),
+    purrr (>= 0.3.3)
