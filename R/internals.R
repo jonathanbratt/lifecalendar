@@ -118,24 +118,38 @@
                                   fill_values,
                                   today,
                                   week_start) {
-
-  # We want to apply special_fill to intervals before dates, so pull out
-  # intervals separately.
+  # We don't have to de-listify dates or intervals here. They are handled fine
+  # downstream.
   special_intervals <- purrr::compact(
     purrr::map(
       special_dates,
       function(d) {
-        if (lubridate::is.interval(d)) {
-          # Round the start of the interval down to the beginning of the week.
+        if (inherits(d, "list")) {
+          if (all(purrr::map_lgl(d, lubridate::is.interval))) {
+            # round start date of all intervals down to beginning of week.
+            d <- purrr::map(
+              d,
+              function(d2) {
+                lubridate::int_start(d2) <- lubridate::floor_date(
+                  lubridate::int_start(d2),
+                  unit = "week",
+                  week_start = week_start
+                )
+                return(d2)
+              }
+            )
+            return(d)
+          }
+        } else if (lubridate::is.interval(d)) {
+          # round start date of interval down to beginning of week.
           lubridate::int_start(d) <- lubridate::floor_date(
             lubridate::int_start(d),
             unit = "week",
             week_start = week_start
           )
           return(d)
-        } else {
-          return(NULL)
         }
+        return(NULL)
       }
     )
   )
@@ -144,7 +158,23 @@
     purrr::map(
       special_dates,
       function(d) {
-        if (lubridate::is.Date(d)) {
+        if (inherits(d, "list")) {
+          if (all(purrr::map_lgl(d, lubridate::is.Date))) {
+            # round all dates down to beginning of week.
+            d <- purrr::map(
+              d,
+              function(d2) {
+                d2 <- lubridate::floor_date(
+                  d2,
+                  unit = "week",
+                  week_start = week_start
+                )
+                return(d2)
+              }
+            )
+            return(d)
+          }
+        } else if (lubridate::is.Date(d)) {
           # Round date down to beginning of week.
           d <- lubridate::floor_date(
             d,
@@ -193,7 +223,7 @@
     if (special %in% names(fill_values)) {
       calendar <- dplyr::mutate(
         calendar,
-        fill = ifelse(date == sdate,
+        fill = ifelse(date %in% sdate, # %in% to handle sdate being list
                       special,
                       fill)
       )
@@ -201,7 +231,7 @@
     if (special %in% names(color_values)) {
       calendar <- dplyr::mutate(
         calendar,
-        outline = ifelse(date == sdate,
+        outline = ifelse(date %in% sdate, # %in% to handle sdate being list
                          special,
                          outline)
       )
